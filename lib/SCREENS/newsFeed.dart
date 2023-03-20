@@ -32,6 +32,12 @@ class _NewsScreenState extends State<NewsScreen> {
     loadNews();
   }
 
+  @override
+  void didChangeDependencies() {
+    precacheImage(Image.asset("assets/images/background.jpg").image, context);
+    super.didChangeDependencies();
+  }
+
   ////////function to load all the news
   void loadNews() async {
     articaleServices.isLoading.value = true;
