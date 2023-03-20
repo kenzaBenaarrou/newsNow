@@ -1,5 +1,5 @@
 class API {
-  static const apikey = "8fa381934a8648dfbdff6606c865b9fd";
+  static const apikey = "32e09d9590804a24b017b26ea30c6bb0";
 
   static const apiBaseUrl = "https://newsapi.org/v2";
 }

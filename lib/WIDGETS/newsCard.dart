@@ -75,7 +75,7 @@ class _NewsCardState extends State<NewsCard> {
                           Flexible(
                             child: Text(
                               // maxLines: 3,
-                              "BY : " + widget.article!.author,
+                              "BY : ${widget.article!.author}",
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.grey,

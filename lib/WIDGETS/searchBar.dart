@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 
 class SearchBar extends StatefulWidget {
-  const SearchBar({super.key});
+  final Function()? search;
+  final TextEditingController? query;
+  const SearchBar({super.key, this.search, this.query});
 
   @override
   State<SearchBar> createState() => _SearchBarState();
@@ -14,7 +14,6 @@ class _SearchBarState extends State<SearchBar> {
   @override
   Widget build(BuildContext context) {
     return FlexibleSpaceBar(
-        // titlePadding: EdgeInsets.only(bottom: 15),
         centerTitle: true,
         title:
             //  isSearchClicked
@@ -24,7 +23,7 @@ class _SearchBarState extends State<SearchBar> {
           // constraints: BoxConstraints(minHeight: 40, maxHeight: 40),
           width: 220,
           child: CupertinoTextField(
-            // controller: _filter,
+            controller: widget.query,
             keyboardType: TextInputType.text,
             placeholder: "Search..",
             placeholderStyle: const TextStyle(
@@ -35,13 +34,12 @@ class _SearchBarState extends State<SearchBar> {
             suffix: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 5),
               child: InkWell(
-                onTap: (() {}),
+                onTap: () {},
                 child: const Icon(
                   Icons.search,
                 ),
               ),
             ),
-
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8.0),
               color: Colors.white,

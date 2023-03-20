@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:newsnow/SERVICES/articleServices.dart';
+import 'package:newsnow/WIDGETS/alert.dart';
 import 'package:newsnow/WIDGETS/newsCard.dart';
 
 import '../WIDGETS/searchBar.dart';
@@ -14,12 +15,12 @@ class NewsScreen extends StatefulWidget {
 }
 
 class _NewsScreenState extends State<NewsScreen> {
+  TextEditingController query = TextEditingController();
   final ArticaleServices articaleServices = ArticaleServices();
   ScrollController scrollController = ScrollController();
   bool showBackToTopButton = false;
-  List<dynamic> news = [];
+  bool isSearching = false;
   int page = 1;
-  bool loading = false;
   String searchQuery = '';
 
   @override
@@ -33,39 +34,31 @@ class _NewsScreenState extends State<NewsScreen> {
     loadNews();
   }
 
-  Future loadNews() async {
-    setState(() {
-      loading = true;
-    });
-
+  ////////function to load all the news
+  void loadNews() async {
+    articaleServices.isLoading.value = true;
+    //////////// get the news
     try {
-      final List<dynamic> news = await articaleServices.getNews(
+      await articaleServices.getNews(
         page: page,
         pageSize: 20,
         query: searchQuery,
       );
-
+      ///// add all the news to a new list to track the pagination
       setState(() {
         articaleServices.addedListNews.addAll(articaleServices.listNews);
-        loading = false;
+        articaleServices.isLoading.value = false;
       });
     } catch (e) {
       setState(() {
-        loading = false;
+        articaleServices.isLoading.value = false;
       });
-
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(news.length.toString()),
-          content: Text(e.toString()),
-        ),
-      );
     }
   }
 
-  void _loadMoreNews() {
-    if (!loading) {
+//////// function to load more news
+  void loadMoreNews() {
+    if (!articaleServices.isLoading.value) {
       setState(() {
         page++;
       });
@@ -74,7 +67,8 @@ class _NewsScreenState extends State<NewsScreen> {
     }
   }
 
-  void _searchNews(String query) {
+//////// function to search for a specific news using keywords
+  void searchNews(String query) {
     setState(() {
       searchQuery = query;
       page = 1;
@@ -94,35 +88,82 @@ class _NewsScreenState extends State<NewsScreen> {
           body: CustomScrollView(
             controller: scrollController,
             slivers: [
-              const SliverAppBar(
+              SliverAppBar(
                   backgroundColor: Colors.grey,
                   // title: Text('News'),
                   floating: true,
                   snap: true,
                   expandedHeight: 300,
-                  actions: [],
-                  flexibleSpace: SearchBar()),
+                  flexibleSpace: FlexibleSpaceBar(
+                      centerTitle: true,
+                      title: SizedBox(
+                        width: 220,
+                        child: searchBar(),
+                      ),
+                      // : Text("Tutorial"),
+                      background: Image.asset(
+                        "assets/images/background.jpg",
+                        fit: BoxFit.cover,
+                      ))),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     if (index == articaleServices.addedListNews.length) {
-                      return loading
+                      return articaleServices.isLoading.value
                           ? const Center(
-                              child: CircularProgressIndicator(),
-                            )
-                          : Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 140, vertical: 8),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(50)),
-                                ),
-                                onPressed: _loadMoreNews,
-                                child: const Text('Load more'),
+                              child: CircularProgressIndicator(
+                                color: Colors.grey,
                               ),
-                            );
+                            )
+                          : articaleServices.addedListNews.isNotEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 140, vertical: 8),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(50)),
+                                    ),
+                                    onPressed: loadMoreNews,
+                                    child: const Text('Load more'),
+                                  ),
+                                )
+                              : Column(
+                                  children: [
+                                    const SizedBox(
+                                      height: 150,
+                                    ),
+                                    const Text(
+                                      "No news found with the givin keyword",
+                                      style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.grey,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(50)),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          searchQuery = "";
+                                          isSearching = false;
+                                          query.clear();
+                                          loadNews();
+                                        });
+                                      },
+                                      child: const Text('Load All news'),
+                                    ),
+                                  ],
+                                );
                     } else {
                       return InkWell(
                         onTap: () => Get.to(() => DetailPage(
@@ -140,6 +181,7 @@ class _NewsScreenState extends State<NewsScreen> {
           ),
           floatingActionButton: showBackToTopButton
               ? FloatingActionButton(
+                  backgroundColor: Colors.grey,
                   onPressed: () {
                     scrollController.animateTo(0,
                         duration: const Duration(milliseconds: 500),
@@ -152,43 +194,45 @@ class _NewsScreenState extends State<NewsScreen> {
       ),
     );
   }
-}
 
-class _SearchDelegate extends SearchDelegate<String> {
-  @override
-  String get searchFieldLabel => 'Search news';
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
+  searchBar() {
+    return CupertinoTextField(
+      controller: query,
+      cursorColor: Colors.grey,
+      keyboardType: TextInputType.text,
+      placeholder: "Search..",
+      placeholderStyle: const TextStyle(
+        color: Color(0xffC4C6CC),
+        fontSize: 14.0,
       ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
-      },
+      suffix: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        child: InkWell(
+            onTap: () {
+              setState(() {
+                ///////for changing the search close icons
+                if (query.text.isNotEmpty && isSearching == false) {
+                  isSearching = true;
+                } else {
+                  isSearching = false;
+                  query.clear();
+                }
+              });
+              FocusManager.instance.primaryFocus?.unfocus();
+              searchNews(query.text);
+            },
+            child: isSearching == false
+                ? const Icon(
+                    Icons.search,
+                  )
+                : const Icon(
+                    Icons.close,
+                  )),
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.0),
+        color: Colors.white,
+      ),
     );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return Center(
-      child: Text('Searching for "$query"...'),
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return Container();
   }
 }
