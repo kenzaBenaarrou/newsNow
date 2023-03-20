@@ -1,15 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:newsnow/SERVICES/articleServices.dart';
-import 'package:newsnow/WIDGETS/alert.dart';
 import 'package:newsnow/WIDGETS/newsCard.dart';
-
-import '../WIDGETS/searchBar.dart';
 import 'detailPage.dart';
 
 class NewsScreen extends StatefulWidget {
+  const NewsScreen({super.key});
+
   @override
   _NewsScreenState createState() => _NewsScreenState();
 }
@@ -90,7 +88,6 @@ class _NewsScreenState extends State<NewsScreen> {
             slivers: [
               SliverAppBar(
                   backgroundColor: Colors.grey,
-                  // title: Text('News'),
                   floating: true,
                   snap: true,
                   expandedHeight: 300,
@@ -100,7 +97,6 @@ class _NewsScreenState extends State<NewsScreen> {
                         width: 220,
                         child: searchBar(),
                       ),
-                      // : Text("Tutorial"),
                       background: Image.asset(
                         "assets/images/background.jpg",
                         fit: BoxFit.cover,
@@ -136,7 +132,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                       height: 150,
                                     ),
                                     const Text(
-                                      "No news found with the givin keyword",
+                                      "No news found with the given keyword",
                                       style: TextStyle(
                                           color: Colors.grey,
                                           fontSize: 18,

@@ -1,10 +1,6 @@
 import 'dart:convert';
-
-import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:newsnow/MODELS/articleModel.dart';
-
-import '../API/apiParams.dart';
 import '../API/apiRequests.dart';
 
 class ArticaleServices extends GetxController {
